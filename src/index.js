@@ -136,6 +136,12 @@ const home = ctx => {
   ctx.body = 'PPet Api';
 };
 
+app.use(async (ctx, next) => {
+  await next();
+  // TODO
+  ctx.set('Cache-Control', `public, max-age=${2 * 24 * 60 * 60}`);
+});
+
 app.use(_.get('/get', ppetRoute.get));
 app.use(_.get('/model/*', ppetRoute.model));
 app.use(_.get('/switch', ppetRoute.switch));
