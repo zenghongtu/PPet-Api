@@ -7,11 +7,24 @@ app.use(async function(ctx, next) {
   try {
     await next();
   } catch (err) {
-    err.message = `<p> <em>${err.message}</em> <br/><br/> please contact JasonZeng<zenghongtu@gmail.com>.</p>`;
+    err.message = `<p> <b>${err.message}</b> <br/><br/> please contact JasonZeng<zenghongtu@gmail.com>.</p>`;
 
     ctx.app.emit('error', err, ctx);
   }
 });
+
+const parseQuery = ctx => {
+  const { id } = ctx.query;
+  if (!id) {
+    const err = new Error('缺少参数');
+    err.status = 400;
+    throw err;
+  }
+
+  return id.split('-').map(item => +item);
+};
+
+const { models, messages } = require('../assets/model_list.json');
 
 const ppetRoute = {
   model: ctx => {
@@ -19,14 +32,7 @@ const ppetRoute = {
     ctx.redirect(`http://ppet-assets-0.zenghongtu.com${ctx.path}`);
   },
   get: ctx => {
-    const { id } = ctx.query;
-    if (!id) {
-      return ctx.app.emit('error', { status: 400, message: '缺少参数' }, ctx);
-    }
-
-    const [modelId, textureId] = id.split('-').map(item => +item);
-
-    const { models, messages } = require('../assets/model_list.json');
+    const [modelId, textureId] = parseQuery(ctx);
 
     let model = models[modelId];
     let modelJSON;
@@ -79,14 +85,7 @@ const ppetRoute = {
     ctx.body = modelJSON;
   },
   switch: ctx => {
-    const { id } = ctx.query;
-    if (!id) {
-      return ctx.app.emit('error', { status: 400, message: '缺少参数' }, ctx);
-    }
-
-    const [modelId, textureId] = id.split('-').map(item => +item);
-
-    const { models, messages } = require('../assets/model_list.json');
+    const [modelId, textureId] = parseQuery(ctx);
 
     let nextModelId;
     if (modelId < models.length - 1) {
@@ -103,14 +102,7 @@ const ppetRoute = {
     };
   },
   switch_textures: ctx => {
-    const { id } = ctx.query;
-    if (!id) {
-      return ctx.app.emit('error', { status: 400, message: '参数错误' }, ctx);
-    }
-
-    const [modelId, textureId] = id.split('-').map(item => +item);
-
-    const { models, messages } = require('../assets/model_list.json');
+    const [modelId, textureId] = parseQuery(ctx);
 
     const model = models[modelId];
 
